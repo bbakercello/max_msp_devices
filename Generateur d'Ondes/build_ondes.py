@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate Ondes Martenot Max for Live device (single flat patcher)."""
+"""Generate Generateur d'Ondes Max for Live device (single flat patcher)."""
 
 import json
 import re
@@ -230,6 +230,34 @@ def _build_ui(b):
     c.d_bend = add_dial(b, 464, 22, "Pitch Bend Range", "Bend", 0, 12, 2, unitstyle=7, steps=13)
     c.d_ribbon = add_dial(b, 520, 22, "Ribbon", "Ribbon", -2, 2, 0, unitstyle=7)
     c.d_intensity = add_dial(b, 576, 22, "Intensity", "Intens", 0, 1, 0, unitstyle=1)
+
+    # --- Vintage engraved nameplate in the empty pocket right of row 1 ---
+    # Plain `comment` objects (not parameters) carry the title so we can apply
+    # the American Typewriter face + aged-ink colours locally, without touching
+    # the default font used by every other control.
+    INK = [0.91, 0.85, 0.69, 1.0]   # aged ivory
+    BRASS = [0.69, 0.55, 0.34, 1.0]  # tarnished brass
+
+    def title(text, x, y, w, h, size, color, face=1):
+        b.add(
+            "comment", text, x, y, w, h, numinlets=1, numoutlets=0, outlettype=[],
+            presentation=1, fontname="American Typewriter", fontsize=float(size),
+            fontface=face, textjustification=1, textcolor=color,
+        )
+
+    # Engraved plate sits behind the lettering (background layer).
+    b.add(
+        "panel", "", 626, 8, 184, 70, numinlets=1, numoutlets=0, outlettype=[],
+        presentation=1, background=1, bgcolor=[0.18, 0.13, 0.10, 1.0],
+        bordercolor=[0.60, 0.46, 0.30, 1.0], border=1, rounded=6,
+    )
+    title("Générateur", 630, 12, 176, 22, 16, INK)
+    title("d'Ondes", 630, 33, 176, 22, 16, INK)
+    b.add(  # hairline rule under the title
+        "panel", "", 672, 57, 92, 1, numinlets=1, numoutlets=0, outlettype=[],
+        presentation=1, background=1, bgcolor=BRASS, border=0, rounded=0,
+    )
+    title("— ONDES MUSICALES —", 630, 60, 176, 12, 7, BRASS, face=0)
 
     # Row 2: tone + master (tabs need explicit labels)
     label("Timbre", 16, 89, 56)
@@ -506,7 +534,7 @@ def _build_master(b, n):
 
 
 def build_device():
-    """Single flat Ondes Martenot instrument patcher (UI + DSP + wiring)."""
+    """Single flat Generateur d'Ondes instrument patcher (UI + DSP + wiring)."""
     b = PatcherBuilder(presentation=True, device_width=820.0)
 
     c = _build_ui(b)
@@ -528,9 +556,9 @@ def build_device():
     _wire_diffuseurs(b, c, n)
     _wire_master(b, c, n)
 
-    b.patcher["title"] = "Ondes Martenot"
+    b.patcher["title"] = "Generateur d'Ondes"
     b.patcher["description"] = (
-        "Monophonic Ondes Martenot — heterodyne-inspired sine core, authentic timbres, "
+        "Monophonic Generateur d'Ondes — heterodyne-inspired sine core, authentic timbres, "
         "subtle resonant diffuseurs, hearing-safe output"
     )
     b.patcher["openrect"] = [0.0, 0.0, 0.0, 172.0]
@@ -951,7 +979,7 @@ def verify_device(amxd_path):
     device = load_amxd_json(amxd_path)
     patcher = device["patcher"]
 
-    if patcher.get("project", {}).get("name") != "Ondes Martenot":
+    if patcher.get("project", {}).get("name") != "Generateur d'Ondes":
         errors.append("missing or wrong project name")
 
     embeds = [b["box"] for b in patcher["boxes"] if "patcher" in b["box"]]
@@ -1054,9 +1082,9 @@ def write_amxd(path, device_json):
         for key in ("title", "description", "devicewidth", "openinpresentation", "openrect"):
             if key in ours:
                 patcher[key] = ours[key]
-        patcher["title"] = "Ondes Martenot"
+        patcher["title"] = "Generateur d'Ondes"
         if "project" in patcher:
-            patcher["project"]["name"] = "Ondes Martenot"
+            patcher["project"]["name"] = "Generateur d'Ondes"
         device_json = template
 
     payload = json.dumps(device_json, ensure_ascii=False, indent="\t").encode("utf-8")
@@ -1077,7 +1105,7 @@ def write_amxd(path, device_json):
 def main():
     reset_ids()
     device = build_device().build()
-    amxd_path = ROOT / "Ondes Martenot.amxd"
+    amxd_path = ROOT / "Generateur d'Ondes.amxd"
     write_amxd(amxd_path, device)
     print(f"Wrote {amxd_path}")
 
