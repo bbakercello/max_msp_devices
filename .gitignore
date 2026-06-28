@@ -1,0 +1,9 @@
+# Python
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
+
+# Ableton factory preset, not part of this project
+Max Instrument.adv
